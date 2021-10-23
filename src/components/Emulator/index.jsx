@@ -18,7 +18,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Emulator() {
     const classes = useStyles();
-
     return (
         <Paper className={classes.paper}>
             <Display />
