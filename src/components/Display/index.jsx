@@ -7,6 +7,8 @@ import {
     setDisplay, selectDisplay,
 } from 'slices/emulatorSlice';
 
+import Terminal from 'components/Terminal';
+
 const useStyles = makeStyles((theme) => ({
     display: {
         width: 'inherit',
@@ -43,7 +45,11 @@ export default function Display() {
             return <>7 segment</>;
         case 'terminal':
         default:
-            return <>Terminal</>;
+            return (
+                <div className="terminal">
+                    <Terminal />
+                </div>
+            );
         }
     };
 
