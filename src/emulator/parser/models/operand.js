@@ -4,7 +4,7 @@ function toNumber(value) {
     let intVal;
     if (value.startsWith('0B')) {
         intVal = parseInt(value, 2);
-    } else if (value.startsWith('0X')) {
+    } else if (value.startsWith('0X') || value.endsWith('H')) {
         intVal = parseInt(value, 16);
     } else if (value.startsWith('0')) {
         intVal = parseInt(value, 8);

@@ -130,7 +130,7 @@ export default class Lexer {
             return token;
         }
 
-        const numberRegex = '(0X|0B|0|)[0-9A-F]+';
+        const numberRegex = '(0X|0B|0|)[0-9A-F]+(H|h|)';
         const immediateRegex = new RegExp(`^${numberRegex}$`);
 
         if (immediateRegex.test(upperCaseTok)) {
@@ -161,7 +161,7 @@ export default class Lexer {
 
         const upperCaseTok = this.buffer.substring(this.position, end + 1).toUpperCase();
 
-        const numberRegex = '(0X|0B|0|)[0-9A-F]+';
+        const numberRegex = '(0X|0B|0|)[0-9A-F]+(H|h|)';
         const memoryRegex = new RegExp(`\\[${numberRegex}\\]`);
         const relativeRegex = /^\[[A-Z]{2}\+[A-Z]{2}\]$/;
 
