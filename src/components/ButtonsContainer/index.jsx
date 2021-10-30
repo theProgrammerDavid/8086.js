@@ -18,6 +18,7 @@ import {
     raiseError,
 } from 'slices/emulatorSlice';
 import emulator from 'emulator/emulator';
+import { Tooltip } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     buttonsContainer: {
@@ -148,20 +149,28 @@ export default function ButtonsContainer() {
     return (
         <div className={classes.buttonsContainer}>
             <div className={classes.buttonWrapper}>
-                <button type="button" className={classes.button} onClick={stepBackClick}>
-                    <sup className={classes.count}>{pastLength}</sup>
-                    <FontAwesomeIcon icon={faArrowLeft} className={backClass} />
-                </button>
-                <button type="button" className={classes.button} onClick={runFromPointClick}>
-                    <FontAwesomeIcon icon={faPlay} className={classes.playIcon} />
-                </button>
-                <button type="button" className={classes.button} onClick={stepForwardClick}>
-                    <FontAwesomeIcon icon={faArrowRight} className={forwardClass} />
-                    <sup className={classes.count}>{futureLength}</sup>
-                </button>
-                <button type="button" className={classes.button} onClick={runAllClick}>
-                    <FontAwesomeIcon icon={faForward} />
-                </button>
+                <Tooltip title="step back">
+                    <button type="button" className={classes.button} onClick={stepBackClick}>
+                        <sup className={classes.count}>{pastLength}</sup>
+                        <FontAwesomeIcon icon={faArrowLeft} className={backClass} />
+                    </button>
+                </Tooltip>
+                <Tooltip title="run from point">
+                    <button type="button" className={classes.button} onClick={runFromPointClick}>
+                        <FontAwesomeIcon icon={faPlay} className={classes.playIcon} />
+                    </button>
+                </Tooltip>
+                <Tooltip title="step forward">
+                    <button type="button" className={classes.button} onClick={stepForwardClick}>
+                        <FontAwesomeIcon icon={faArrowRight} className={forwardClass} />
+                        <sup className={classes.count}>{futureLength}</sup>
+                    </button>
+                </Tooltip>
+                <Tooltip title="run">
+                    <button type="button" className={classes.button} onClick={runAllClick}>
+                        <FontAwesomeIcon icon={faForward} />
+                    </button>
+                </Tooltip>
             </div>
 
         </div>
