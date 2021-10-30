@@ -1,14 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { XTerm } from 'xterm-for-react';
+import { useSelector } from 'react-redux';
+import { selectTerminalInput } from 'slices/emulatorSlice';
 
 export default function Terminal() {
     const xtermRef = useRef(null);
     const [input, setInput] = useState('');
+    const terminalInput = useSelector(selectTerminalInput);
 
     useEffect(() => {
         xtermRef.current.terminal.writeln('User Terminal for input output');
         xtermRef.current.terminal.write('>');
     }, []);
+
+    useEffect(() => {
+        xtermRef.current.terminal.write(terminalInput);
+        setInput(terminalInput);
+    }, [terminalInput]);
 
     const onData = (data) => {
         const code = data.charCodeAt(0);

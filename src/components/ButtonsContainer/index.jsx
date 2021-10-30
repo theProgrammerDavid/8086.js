@@ -16,9 +16,15 @@ import {
     executeStep,
     resetRegMemState,
     raiseError,
+    setTerminalInput,
 } from 'slices/emulatorSlice';
 import emulator from 'emulator/emulator';
 import { Tooltip } from '@material-ui/core';
+import { Interrupt } from 'emulator/parser/models/interrupts';
+import {
+    dosInterruptTable,
+    dosSystemCallTable,
+} from 'emulator/parser/constants';
 
 const useStyles = makeStyles((theme) => ({
     buttonsContainer: {
@@ -68,6 +74,55 @@ export default function ButtonsContainer() {
         emulator.loadCode(code);
     };
 
+    const handleDosInterrupt = (dosInterruptCode) => {
+        switch (dosInterruptCode) {
+        case dosInterruptTable.DOS_SYSTEM_CALL: {
+            const ahValue = emulatorState.registers.present.AH;
+
+            switch (ahValue) {
+            case dosSystemCallTable.INPUT_CHAR:
+                break;
+
+            case dosSystemCallTable.INPUT_STRING:
+                break;
+
+            case dosSystemCallTable.DISPLAY_CHAR:
+                dispatch(setTerminalInput(String.fromCharCode(emulatorState.registers.present.DX)));
+                break;
+
+            case dosSystemCallTable.DISPLAY_STRING:
+                break;
+
+            case dosSystemCallTable.TERMINATE_PROGRAM:
+                break;
+
+            default:
+                break;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    };
+
+    const interruptHandler = (interrupt) => {
+        switch (interrupt.type) {
+        case 'Dos':
+            handleDosInterrupt(interrupt.code);
+            break;
+        default:
+            dispatch(raiseError({
+                name: 'Invalid Interrupt',
+                token: interrupt.code,
+                // message: err.message,
+                // position: err.position,
+                // lineNumber: err.lineNumber,
+            }));
+            break;
+        }
+    };
+
     const stepForwardClick = () => {
         const len = emulatorState.registers.future.length;
         if (len === 0) return;
@@ -106,17 +161,26 @@ export default function ButtonsContainer() {
         try {
             loadCode();
             emulator.cpu.step();
+            // dispatch(executeStep({
+            //     registers: emulator.getRegisters(),
+            //     memory: emulator.getSerialisableMemory(),
+            // }));
+        } catch (err) {
+            if (err instanceof Interrupt) {
+                interruptHandler(err);
+            } else {
+                dispatch(raiseError({
+                    name: err.name,
+                    token: err.token,
+                    message: err.message,
+                    position: err.position,
+                    lineNumber: err.lineNumber,
+                }));
+            }
+        } finally {
             dispatch(executeStep({
                 registers: emulator.getRegisters(),
                 memory: emulator.getSerialisableMemory(),
-            }));
-        } catch (err) {
-            dispatch(raiseError({
-                name: err.name,
-                token: err.token,
-                message: err.message,
-                position: err.position,
-                lineNumber: err.lineNumber,
             }));
         }
     };
