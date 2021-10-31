@@ -4,6 +4,7 @@ export { default as Mnemonic } from 'emulator/parser/models/mnemonic.js';
 export { default as Separator } from 'emulator/parser/models/separator.js';
 export { default as StringToken } from 'emulator/parser/models/stringToken.js';
 export { default as Instruction } from 'emulator/parser/models/instruction.js';
+export { default as Label, LabelDeclaration } from 'emulator/parser/models/labels';
 export {
     InvalidTokenError,
     UnterminatedQuoteError,

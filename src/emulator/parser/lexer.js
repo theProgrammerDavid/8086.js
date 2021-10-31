@@ -2,6 +2,7 @@ import {
     nonToken,
     instructionMnemonics,
     registers,
+    jummpMnemonics,
 } from 'emulator/parser/constants.js';
 import {
     ImmediateOp,
@@ -16,6 +17,8 @@ import {
     InvalidTokenError,
     UnterminatedQuoteError,
     UnterminatedBracketError,
+    Label,
+    LabelDeclaration,
 } from 'emulator/parser/models/index.js';
 
 export default class Lexer {
@@ -28,6 +31,10 @@ export default class Lexer {
 
     static isNewLine(c) {
         return /^[\n\r]$/.test(c);
+    }
+
+    static isLabel(c) {
+        return /:/.test(c);
     }
 
     static isComment(c) {
@@ -61,6 +68,7 @@ export default class Lexer {
     skipNonTokens() {
         while (this.position < this.bufferLength) {
             const c = this.buffer[this.position];
+            // console.log(c)
             if (nonToken.includes(c)) {
                 this.position += 1;
             } else {
@@ -110,6 +118,46 @@ export default class Lexer {
         const tok = this.buffer.substring(this.position, end);
         const upperCaseTok = tok.toUpperCase();
 
+        /*
+        * check for label declaration
+        * START:
+        */
+        if (this.buffer.charAt(end) === ':') {
+            const token = new LabelDeclaration({
+                name: upperCaseTok,
+                lineNumber: this.lineNumber,
+                posittion: this.position,
+            });
+            this.position = end + 1;
+            return token;
+        }
+        /**
+         * check for jump to a label
+         * JMP L1
+         */
+        if (jummpMnemonics.includes(upperCaseTok)) {
+            console.log('jump statement');
+            const token = new Mnemonic({
+                value: upperCaseTok,
+                position: this.position,
+                lineNumber: this.lineNumber,
+            });
+            this.position = end;
+
+            let newEnd = this.position + 1;
+            while (newEnd < this.bufferLength
+                && Lexer.isAlphaNum(this.buffer[newEnd])) {
+                newEnd += 1;
+            }
+            // console.log(`|${this.buffer.substring(this.position+1, newEnd)}|`)
+            const jumpLabel = new Label({
+                name: this.buffer.substring(this.position + 1, newEnd).toUpperCase(),
+                position: this.position,
+                lineNumber: this.lineNumber,
+            });
+            this.position = newEnd;
+            return [token, jumpLabel];
+        }
         if (instructionMnemonics.includes(upperCaseTok)) {
             const token = new Mnemonic({
                 value: upperCaseTok,
@@ -142,12 +190,23 @@ export default class Lexer {
             this.position = end;
             return token;
         }
+        console.log('invalid token');
 
         throw new InvalidTokenError({
             token: upperCaseTok,
             position: this.position,
             lineNumber: this.lineNumber,
         });
+    }
+
+    processLabel() {
+        const end = this.buffer.indexOf(':', this.position + 1);
+        if (end === -1) {
+            throw new SyntaxError({
+                position: this.position,
+                lineNumber: this.lineNumber,
+            });
+        }
     }
 
     processBrackets() {
@@ -272,7 +331,10 @@ export default class Lexer {
             const nextTok = this.nextToken();
 
             if (nextTok) {
-                tokens.push(nextTok);
+                if (Array.isArray(nextTok)) {
+                    tokens.push(nextTok[0]);
+                    tokens.push(nextTok[1]);
+                } else tokens.push(nextTok);
             }
         }
 

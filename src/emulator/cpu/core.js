@@ -12,22 +12,31 @@ import {
     BiosInterrupt,
     HardwareInterrupt,
 } from 'emulator/parser/models/interrupts';
+import { LabelDeclaration } from 'emulator/parser/models';
 
 export default class CPU {
     constructor() {
         this.registers = new Registers();
         this.memory = new Memory();
         this.addressing = new Addressing(this.registers, this.memory);
+        this.jumpTable = {};
     }
 
     loadCode(code) {
         const cs = this.registers.regs.CS.get();
         code.forEach((elem, i) => {
             this.memory.set(cs + i, elem);
+            const { mnemonic } = elem;
+            if (mnemonic instanceof LabelDeclaration) {
+                if (!(mnemonic.name in this.jumpTable)) {
+                    this.jumpTable[mnemonic.name] = i;
+                }
+            }
         });
     }
 
     step() {
+        console.log(`ip is ${this.registers.regs.IP.get()}`);
         let ip = this.registers.regs.IP.get();
         const instruction = this.memory.get(this.registers.regs.CS.get() + ip);
 
@@ -221,7 +230,7 @@ export default class CPU {
                 break;
             }
             case 'JMP': {
-                ip = getAddr(op1) - 1;
+                ip = this.jumpTable[instruction.op1.name] - 1;
                 break;
             }
             case 'JE':
